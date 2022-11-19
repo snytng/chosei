@@ -1,7 +1,11 @@
 ﻿# coding: utf-8
-from bottle import route, run, request, response, redirect
+from bottle import route, run, request, response, redirect, static_file
 import random, string
 import base64
+
+@route('/images/<filename>')
+def images(filename):
+    return static_file(filename, "./images")
 
 @route('/')
 @route('/new')
@@ -16,12 +20,12 @@ def new(name = "〇〇会議/□□懇親会", comment=""):
     page_header = f"<h1>chosei 新規イベント作成</h1><hr>"
     page_footer = ""
 
-    
+
     dates = f"""
 2022/11/19 10:00-11:00
 2022/11/20 13:30-14:30
     """
-    
+
     page_body = f"""
     <form method='POST' action='/confirm'>
     イベント名:<br>
@@ -120,7 +124,26 @@ def add_userId(choseiId, userId):
     (name, comment, n, dates, users) = get_data(choseiId)
 
     response.set_header('Content-Type', 'text/html; charset=utf-8')
-    html_header = f"<head><title>chosei {name}</title></head>"
+    html_header = f"""
+    <head>
+    <title>chosei {name}</title>
+    <style>
+    input[type="radio"] {{
+        display: none;
+    }}
+    label img {{
+        margin: 1px;
+        padding: 1px;
+    }}
+    input[type="radio"] + label img {{
+        opacity:0.1;
+    }}
+    input[type="radio"]:checked + label img {{
+        opacity:1;
+    }}
+    </style>
+    </head>
+    """
     html_body = "<body>{}</body>"
 
     (scheme, host, path, query_string, fragment) = request.urlparts
@@ -149,8 +172,12 @@ def add_userId(choseiId, userId):
     page_form  += "<table border='1' cellpadding='15'>"
     page_form  += """
     <tr bgcolor='#ddeeee' align='center'>
-    <th>候補日時</th><th>○</th><th>△</th><th>✕</th>
-    </tr>"""
+    <th>候補日時</th>
+    <th bgcolor='#f0eeee'><img src="/images/image0.png" with="20" height="20"/></th>
+    <th bgcolor='#f0eeee'><img src="/images/image1.png" with="20" height="20"/></th>
+    <th bgcolor='#f0eeee'><img src="/images/image2.png" with="20" height="20"/></th>
+    </tr>
+    """
     for (i, date) in enumerate(dates):
         checked0 = "checked" if users[uid][i+1] == "0" else ""
         checked1 = "checked" if users[uid][i+1] == "1" else ""
@@ -158,9 +185,18 @@ def add_userId(choseiId, userId):
         page_form += f"""
         <tr>
         <td>{date}</td>
-        <td><input type="radio" name="date{i}" value="0" {checked0}/></td>
-        <td><input type="radio" name="date{i}" value="1" {checked1}/></td>
-        <td><input type="radio" name="date{i}" value="2" {checked2}/></td>
+        <td>
+        <input type="radio" name="date{i}" value="0" id="image0{i}" {checked0}/>
+        <label for="image0{i}"><img src="/images/image0.png" with="40" height="40"></label>
+        </td>
+        <td>
+        <input type="radio" name="date{i}" value="1" id="image1{i}" {checked1}/>
+        <label for="image1{i}"><img src="/images/image1.png" with="40" height="40"></label>
+        </td>
+        <td>
+        <input type="radio" name="date{i}" value="2" id="image2{i}" {checked2}/>
+        <label for="image2{i}"><img src="/images/image2.png" with="40" height="40"></label>
+        </td>
         </tr>
         """
     page_form  += "</table>"
@@ -222,11 +258,13 @@ def get_table(choseiId):
     # table
     page_table = "<table border='1' cellpadding='15'>"
     # table header
-    tr = "<tr bgcolor='#ddeeee' align='center'>"
-    tr += "<th>日時</th>"
-    tr += "<th bgcolor='#f0eeee'>○</th>"
-    tr += "<th bgcolor='#f0eeee'>△</th>"
-    tr += "<th bgcolor='#f0eeee'>✕</th>"
+    tr = """
+    <tr bgcolor='#ddeeee' align='center'>"
+    <th>日時</th>
+    <th bgcolor='#f0eeee'><img src="/images/image0.png" with="20" height="20"/></th>
+    <th bgcolor='#f0eeee'><img src="/images/image1.png" with="20" height="20"/></th>
+    <th bgcolor='#f0eeee'><img src="/images/image2.png" with="20" height="20"/></th>
+    """
     for (i, user) in enumerate(users):
         tr += "<th>"
         tr += f"<a href='/add/{choseiId}/{i}'>{user[0]}</a>" # name
@@ -256,11 +294,11 @@ def get_table(choseiId):
 
         #users
         for user in users:
-            userdate = "✕"
+            userdate = '<img src="/images/image2.png" with="20" height="20"/>'
             if user[i+1] == "0":
-                userdate = "○"
+                userdate = '<img src="/images/image0.png" with="20" height="20"/>'
             elif user[i+1] == "1":
-                userdate = "△"
+                userdate = '<img src="/images/image1.png" with="20" height="20"/>'
             tr += f"<td>{userdate}</td>" # response
         tr += "</tr>"
 
