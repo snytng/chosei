@@ -13,18 +13,23 @@ def new(name = "event_name", comment=""):
     response.set_header('Content-Type', 'text/html; charset=utf-8')
     html_header = f"<head><title>chosei new</title></head>"
     html_body = "<body>{}</body>"
-    page_header = f"<h1>chosei 新規作成</h1><hr>"
+    page_header = f"<h1>chosei 新規イベント作成</h1><hr>"
     page_footer = ""
 
+    
+    dates = f"""
+    2022/11/19 10:00-11:00
+    2022/11/20 13:30-14:30
+    """
+    
     page_body = f"""
     <form method='POST' action='/confirm'>
     イベント名:<br>
     <input type="text" name="name" value="{name}" pattern="[\S]+" placeholder="name"/><br>
     候補日時:<br>
-    <textarea name="dates" rows="10" cols="40" placeholder="input dates"></textarea><br>
-    <input id="date1" type="date"><br>
+    <textarea name="dates" rows="10" cols="40" value="{dates}" placeholder="input dates"></textarea><br>
     コメント(任意):<br>
-    <textarea name="comment" rows="3" cols="40" placeholder="comment">{comment}</textarea><br>
+    <textarea name="comment" rows="3" cols="40" placeholder="コメント">{comment}</textarea><br>
     <input type='submit' value='新規作成'/>
     </form>
     """
@@ -49,7 +54,7 @@ def do_confirm():
     response.set_header('Content-Type', 'text/html; charset=utf-8')
     html_header = f"<head><title>chosei new</title></head>"
     html_body = "<body>{}</body>"
-    page_header = f"<h1>chosei 新規作成 確認</h1><font color='red'>{message}</font><hr>"
+    page_header = f"<h1>chosei 新規イベント作成 確認</h1><font color='red'>{message}</font><hr>"
     page_footer = ""
 
     page_body = f"""
@@ -73,7 +78,7 @@ def do_new():
     name = request.forms.name
     comment = request.forms.comment
     dates = request.forms.dates.split("\r\n")
-    dates = [s for s in dates if s.strip() != ''] # 空白は除去
+    dates = [s for s in dates if s.strip() != ''] # 空白を除去
 
     choseiId = randomname(10)
     db_create(choseiId, name, dates, comment)
@@ -95,7 +100,7 @@ def get(choseiId):
     コメント: <table boarder='1'><tr><td><pre>{comment}</pre></td></tr></table><br>
     リンク: <a href="{geturl}">{geturl}</a>
     <hr>"""
-    page_footer = "<hr><a href='/new'>別イベント作成</a>"
+    page_footer = "<hr><a href='/new'>新規イベント作成</a>"
 
     page_table = get_table(choseiId)
     page_input = ""
@@ -126,7 +131,7 @@ def add_userId(choseiId, userId):
     リンク: <a href="{geturl}">{geturl}</a>
     <hr>"""
 
-    page_footer = "<hr><a href='/new'>別イベント作成</a>"
+    page_footer = "<hr><a href='/new'>新規イベント作成</a>"
 
     (name, comment, n, dates, users) = get_data(choseiId)
     uid = int(userId)
