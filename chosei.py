@@ -3,9 +3,10 @@ from bottle import route, run, request, response, redirect
 import random, string
 import base64
 
+@route('/')
 @route('/new')
 @route('/new/<name>')
-def setup(name = "event_name", comment=""):
+def new(name = "event_name", comment=""):
     if "comment" in request.query:
         comment = request.query.comment
 
