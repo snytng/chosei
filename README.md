@@ -7,7 +7,7 @@ manages the event schedule adjustments with participants.
 ## Usage
 
 1. Run the chosei.py script with `python chosei.py`.
-1. Just access "http://localhost:18081/<command>".
+1. Just access "http://localhost:18101/".
 
 ## Commands
 
