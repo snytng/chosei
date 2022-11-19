@@ -1,4 +1,4 @@
-# coding: utf-8
+﻿# coding: utf-8
 from bottle import route, run, request, response, redirect
 import random, string
 import base64
@@ -6,7 +6,7 @@ import base64
 @route('/')
 @route('/new')
 @route('/new/<name>')
-def new(name = "event_name", comment=""):
+def new(name = "〇〇会議/□□懇親会", comment=""):
     if "comment" in request.query:
         comment = request.query.comment
 
@@ -18,18 +18,18 @@ def new(name = "event_name", comment=""):
 
     
     dates = f"""
-    2022/11/19 10:00-11:00
-    2022/11/20 13:30-14:30
+2022/11/19 10:00-11:00
+2022/11/20 13:30-14:30
     """
     
     page_body = f"""
     <form method='POST' action='/confirm'>
     イベント名:<br>
-    <input type="text" name="name" value="{name}" pattern="[\S]+" placeholder="name"/><br>
+    <input type="text" name="name" value="{name}" pattern="[\S]+" placeholder="イベント名を入力"/><br>
     候補日時:<br>
-    <textarea name="dates" rows="10" cols="40" value="{dates}" placeholder="input dates"></textarea><br>
+    <textarea name="dates" rows="10" cols="40" placeholder="候補日時を入力">{dates}</textarea><br>
     コメント(任意):<br>
-    <textarea name="comment" rows="3" cols="40" placeholder="コメント">{comment}</textarea><br>
+    <textarea name="comment" rows="3" cols="40" placeholder="コメントを入力">{comment}</textarea><br>
     <input type='submit' value='新規作成'/>
     </form>
     """
