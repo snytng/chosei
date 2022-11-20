@@ -503,7 +503,7 @@ def get_table(choseiId):
     return page_table
 
 def db_create(choseiId, name, dates=[], comment=""):
-    encoded_comment = base64.b64encode(request.forms.comment.encode()).decode()
+    encoded_comment = base64.b64encode(comment.encode()).decode()
 
     with open(f"./data/{choseiId}.txt", mode="w", encoding="utf8", newline='\r\n') as f:
         f.write(name+ "\n")
@@ -519,7 +519,7 @@ def db_load(choseiId):
 
 def db_add(choseiId, userId, user):
     (name, comment, n, dates, users) = get_data(choseiId)
-    encoded_comment = base64.b64encode(request.forms.comment.encode()).decode()
+    encoded_comment = base64.b64encode(comment.encode()).decode()
 
     uid = int(userId)
     if uid >= len(users):
@@ -540,7 +540,7 @@ def db_add(choseiId, userId, user):
 
 def db_delete(choseiId, userId):
     (name, comment, n, dates, users) = get_data(choseiId)
-    encoded_comment = base64.b64encode(request.forms.comment.encode()).decode()
+    encoded_comment = base64.b64encode(comment.encode()).decode()
 
     uid = int(userId)
     users.pop(uid)
