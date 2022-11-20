@@ -23,7 +23,7 @@ def new(name = "〇〇会議/□□懇親会", comment=""):
     html_body = "<body>{}</body>"
     html_footer = f"</html>"
     page_header = f"<h1>chosei 新規イベント作成</h1><hr>"
-    page_footer = ""
+    page_footer = f"<hr>chosei made by snytng"
 
 
     dates = f"""
