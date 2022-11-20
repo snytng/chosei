@@ -15,15 +15,25 @@ def new(name = "〇〇会議/□□懇親会", comment=""):
         comment = request.query.comment
 
     response.set_header('Content-Type', 'text/html; charset=utf-8')
-    html_header = f"<head><title>chosei new</title></head>"
+    html_header = f"""
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+    <html>
+    <head><title>chosei new</title></head>
+    """
     html_body = "<body>{}</body>"
+    html_footer = f"</html>"
     page_header = f"<h1>chosei 新規イベント作成</h1><hr>"
     page_footer = ""
 
 
     dates = f"""
 2022/11/19（土） 10:00-11:00
-2022/11/20（日） 13:30-14:30
+2022/11/20（日） 12:30-13:30
+2022/11/21（月） 14:00-15:30
+2022/11/22（火） 16:30-17:00
+2022/11/23（水） 09:00-09:30
+2022/11/24（木） 09:30-11:30
+2022/11/25（金） 17:30-18:30
     """
 
     page_body = f"""
@@ -38,7 +48,7 @@ def new(name = "〇〇会議/□□懇親会", comment=""):
     </form>
     """
 
-    return html_header + html_body.format(page_header + page_body + page_footer);
+    return html_header + html_body.format(page_header + page_body + page_footer) + html_footer;
 
 @route('/new_confirm', method="POST")
 def do_new_confirm():
@@ -57,6 +67,8 @@ def do_new_confirm():
 
     response.set_header('Content-Type', 'text/html; charset=utf-8')
     html_header = f"""
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+    <html>
     <head>
     <title>chosei new</title>
     <style>
@@ -66,6 +78,7 @@ def do_new_confirm():
     </style>
     </head>"""
     html_body = "<body>{}</body>"
+    html_footer = f"</html>"
     page_header = f"<h1>chosei 新規イベント作成 確認</h1><font color='red'>{message}</font><hr>"
     page_footer = ""
 
@@ -73,12 +86,11 @@ def do_new_confirm():
     <h2>この内容で新規イベントを作成していいですか？</h2>
     <form method='POST' action='/new'>
     イベント名:<br>
-    <input type="text" name="name" value="{name}" class="readonly"  readonly/><br>
+    <input type="text" name="name" value="{name}" class="readonly" readonly/><br>
     候補日時:<br>
-    <textarea name="dates" rows="10" cols="40" class="readonly"  readonly>{request.forms.dates}</textarea>
-    <br>
+    <textarea name="dates" rows="10" cols="40" class="readonly" readonly>{request.forms.dates}</textarea><br>
     コメント:<br>
-    <textarea name="comment" rows="3" cols="40" class="readonly"  readonly>{comment}</textarea><br>
+    <textarea name="comment" rows="3" cols="40" class="readonly" readonly>{comment}</textarea><br>
     <input type='{submit_type}' value='新規作成'/>
     </form>
     <hr>
@@ -87,7 +99,7 @@ def do_new_confirm():
     </div>
     """
 
-    return html_header + html_body.format(page_header + page_body + page_footer);
+    return html_header + html_body.format(page_header + page_body + page_footer) + html_footer;
 
 @route('/new', method="POST")
 def do_new():
@@ -106,8 +118,13 @@ def get(choseiId):
     (name, comment, n, dates, users) = get_data(choseiId)
 
     response.set_header('Content-Type', 'text/html; charset=utf-8')
-    html_header = f"<head><title>chosei {name}</title></head>"
+    html_header = f"""
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+    <html>
+    <head><title>chosei {name}</title></head>
+    """
     html_body = "<body>{}</body>"
+    html_footer = f"</html>"
 
     (scheme, host, path, query_string, fragment) = request.urlparts
     geturl = f"{scheme}://{host}/get/{choseiId}";
@@ -123,141 +140,25 @@ def get(choseiId):
 
     page_body = page_table + page_input
 
-    return html_header + html_body.format(page_header + page_body + page_footer);
+    return html_header + html_body.format(page_header + page_body + page_footer) + html_footer;
 
 @route('/add/<choseiId>')
-def add(choseiId):
-    (name, comment, n, dates, users) = get_data(choseiId)
-    userId = int(len(users))
-    return redirect(f"/add/{choseiId}/{userId}")
-
 @route('/add/<choseiId>/<userId>')
-def add_userId(choseiId, userId):
+def add_userId(choseiId, userId=None):
     (name, comment, n, dates, users) = get_data(choseiId)
 
-    response.set_header('Content-Type', 'text/html; charset=utf-8')
-    html_header = f"""
-    <head>
-    <title>chosei {name}</title>
-    <style>
-    input[type="radio"] {{
-        display: none;
-    }}
-    label img {{
-        margin: 1px;
-        padding: 1px;
-    }}
-    input[type="radio"] + label img {{
-        opacity:0.1;
-    }}
-    input[type="radio"]:checked + label img {{
-        opacity:1;
-    }}
-    </style>
-    </head>
-    """
-    html_body = "<body>{}</body>"
+    # 新規 userId == None
+    update = False if userId == None else True
 
-    (scheme, host, path, query_string, fragment) = request.urlparts
-    geturl = f"{scheme}://{host}/get/{choseiId}";
-    page_header = f"""
-    <h1>chosei {name}</h1>
-    コメント: <table boarder='1'><tr><td><pre>{comment}</pre></td></tr></table><br>
-    リンク: <a href="{geturl}">{geturl}</a>
-    <hr>"""
-
-    page_footer = "<hr><a href='/new'>新規イベント作成</a>"
-
-    (name, comment, n, dates, users) = get_data(choseiId)
-    uid = int(userId)
-
-    # 更新か追加かを確認
-    update = False if uid >= len(users) else True
-
-    submit_value = "登録更新"
+    # 新規ならユーザーIDと新規ユーザーを追加
     if not update:
+        userId = int(len(users))
         users.append(["新規ユーザー"] + ["2"]*n + [""])
-        submit_value = "登録追加"
-
-    page_form  = f"<form method='POST' action='/add/{choseiId}/{userId}'>"
-    page_form  += f"""
-    ユーザー名:<br>
-    <input type="text" name="user_name" value="{users[uid][0]}"pattern="[\S]+"/>（空白なし）<br>
-    """
-    page_form  += "<table border='1' cellpadding='15'>"
-    page_form  += """
-    <tr bgcolor='#ddeeee' align='center'>
-    <th>候補日時</th>
-    <th bgcolor='#f0eeee'><img src="/images/image0.png" with="20" height="20"/></th>
-    <th bgcolor='#f0eeee'><img src="/images/image1.png" with="20" height="20"/></th>
-    <th bgcolor='#f0eeee'><img src="/images/image2.png" with="20" height="20"/></th>
-    </tr>
-    """
-    for (i, date) in enumerate(dates):
-        checked0 = "checked" if users[uid][i+1] == "0" else ""
-        checked1 = "checked" if users[uid][i+1] == "1" else ""
-        checked2 = "checked" if users[uid][i+1] == "2" else ""
-        page_form += f"""
-        <tr>
-        <td>{date}</td>
-        <td>
-        <input type="radio" name="date{i}" value="0" id="image0{i}" {checked0}/>
-        <label for="image0{i}"><img src="/images/image0.png" with="40" height="40"></label>
-        </td>
-        <td>
-        <input type="radio" name="date{i}" value="1" id="image1{i}" {checked1}/>
-        <label for="image1{i}"><img src="/images/image1.png" with="40" height="40"></label>
-        </td>
-        <td>
-        <input type="radio" name="date{i}" value="2" id="image2{i}" {checked2}/>
-        <label for="image2{i}"><img src="/images/image2.png" with="40" height="40"></label>
-        </td>
-        </tr>
-        """
-    page_form  += "</table>"
-
-    page_form += f"""
-    コメント:<br>
-    <textarea name="user_comment" rows="5" cols="40">{users[uid][n+1]}</textarea><br>
-    <input type="submit" value="{submit_value}"/>
-    """
-    page_form  += "</form>"
-
-    page_form_delete = ""
-    if update:
-        page_form_delete += f"""
-        <hr>
-        <div align="right">
-        <form method='POST' action='/delete_confirm/{choseiId}/{userId}'>
-        <input type="submit" value="登録解除"/>
-        </form>
-        </div>
-        """
-
-    page_body = page_form + page_form_delete
-
-    return html_header + html_body.format(page_header + page_body + page_footer);
-
-@route('/add/<choseiId>/<userId>', method="POST")
-def do_add(choseiId, userId):
-    (name, comment, n, dates, users) = get_data(choseiId)
-
-    user = [request.forms.user_name]
-    for i in range(n):
-        dateN = f"date{i}"
-        user.append(request.forms[dateN])
-    user.append(request.forms.user_comment)
-
-    db_add(choseiId, userId, user)
-
-    return redirect(f"/get/{choseiId}")
-
-@route('/delete_confirm/<choseiId>/<userId>', method="POST")
-def do_delete_confirm(choseiId, userId):
-    (name, comment, n, dates, users) = get_data(choseiId)
 
     response.set_header('Content-Type', 'text/html; charset=utf-8')
     html_header = f"""
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+    <html>
     <head>
     <title>chosei {name}</title>
     <style>
@@ -289,6 +190,7 @@ def do_delete_confirm(choseiId, userId):
     </head>
     """
     html_body = "<body>{}</body>"
+    html_footer = f"</html>"
 
     (scheme, host, path, query_string, fragment) = request.urlparts
     geturl = f"{scheme}://{host}/get/{choseiId}";
@@ -300,16 +202,147 @@ def do_delete_confirm(choseiId, userId):
 
     page_footer = "<hr><a href='/new'>新規イベント作成</a>"
 
-    (name, comment, n, dates, users) = get_data(choseiId)
+    # ユーザーインデックス
     uid = int(userId)
 
-    # 更新か追加かを確認
-    update = False if uid >= len(users) else True
+    page_form  = f"<form method='POST' action='/add/{choseiId}/{userId}'>"
+    page_form  += f"""
+    ユーザー名:<br>
+    <input type="text" name="user_name" value="{users[uid][0]}"pattern="[\S]+"/>（空白なし）<br>
+    """
+    page_form  += "<table border='1' cellpadding='15'>"
+    page_form  += """
+    <tr bgcolor='#ddeeee' align='center'>
+    <th>候補日時</th>
+    <th bgcolor='#f0eeee'><img src="/images/image0.png" with="20" height="20"/></th>
+    <th bgcolor='#f0eeee'><img src="/images/image1.png" with="20" height="20"/></th>
+    <th bgcolor='#f0eeee'><img src="/images/image2.png" with="20" height="20"/></th>
+    </tr>
+    """
+    for (i, date) in enumerate(dates):
+        checked0 = "checked" if users[uid][i+1] == "0" else ""
+        checked1 = "checked" if users[uid][i+1] == "1" else ""
+        checked2 = "checked" if users[uid][i+1] == "2" else ""
+        page_form += f"""
+        <tr>
+        <td>{date}</td>
+        <td>
+        <input type="radio" name="date{i}" value="0" id="image0{i}" {checked0}/>
+        <label for="image0{i}"><img src="/images/image0.png" with="20" height="20"></label>
+        </td>
+        <td>
+        <input type="radio" name="date{i}" value="1" id="image1{i}" {checked1}/>
+        <label for="image1{i}"><img src="/images/image1.png" with="20" height="20"></label>
+        </td>
+        <td>
+        <input type="radio" name="date{i}" value="2" id="image2{i}" {checked2}/>
+        <label for="image2{i}"><img src="/images/image2.png" with="20" height="20"></label>
+        </td>
+        </tr>
+        """
+    page_form  += "</table>"
 
-    submit_value = "登録更新"
+    submit_value = "登録更新" if update else "登録追加"
+    page_form += f"""
+    コメント:<br>
+    <textarea name="user_comment" rows="5" cols="40">{users[uid][n+1]}</textarea><br>
+    <input type="submit" value="{submit_value}"/>
+    """
+    page_form  += "</form>"
+
+    page_form_delete = ""
+    if update:
+        page_form_delete += f"""
+        <hr>
+        <div align="right">
+        <form method='POST' action='/delete_confirm/{choseiId}/{userId}'>
+        <input type="submit" value="登録解除"/>
+        </form>
+        </div>
+        """
+
+    page_body = page_form + page_form_delete
+
+    return html_header + html_body.format(page_header + page_body + page_footer) + html_footer;
+
+@route('/add/<choseiId>/<userId>', method="POST")
+def do_add(choseiId, userId):
+    (name, comment, n, dates, users) = get_data(choseiId)
+
+    user = [request.forms.user_name]
+    for i in range(n):
+        dateN = f"date{i}"
+        user.append(request.forms[dateN])
+    user.append(request.forms.user_comment)
+
+    db_add(choseiId, userId, user)
+
+    return redirect(f"/get/{choseiId}")
+
+@route('/delete_confirm/<choseiId>/<userId>', method="POST")
+def do_delete_confirm(choseiId, userId):
+    (name, comment, n, dates, users) = get_data(choseiId)
+
+    # 新規 userId == None
+    update = False if userId == None else True
+
+    # 新規ならユーザーIDと新規ユーザーを追加
     if not update:
+        userId = int(len(users))
         users.append(["新規ユーザー"] + ["2"]*n + [""])
-        submit_value = "登録追加"
+
+    response.set_header('Content-Type', 'text/html; charset=utf-8')
+    html_header = f"""
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+    <html>
+    <head>
+    <title>chosei {name}</title>
+    <style>
+    input[type="radio"] {{
+        display: none;
+    }}
+    label img {{
+        margin: 1px;
+        padding: 1px;
+    }}
+    input[type="radio"] + label img {{
+        opacity:0.1;
+    }}
+    input[type="radio"]:checked + label img {{
+        opacity:1;
+    }}
+    .readonly{{
+        background: #EEE;
+    }}
+    select[readonly],
+        input[type="radio"][readonly],
+        input[type="checkbox"][readonly]{{
+            pointer-events:none;
+    }}
+    [readonly] + label{{
+        pointer-events:none;
+    }}
+    </style>
+    </head>
+    """
+    html_body = "<body>{}</body>"
+    html_footer = f"</html>"
+
+    (scheme, host, path, query_string, fragment) = request.urlparts
+    geturl = f"{scheme}://{host}/get/{choseiId}";
+    page_header = f"""
+    <h1>chosei {name}</h1>
+    コメント: <table boarder='1'><tr><td><pre>{comment}</pre></td></tr></table><br>
+    リンク: <a href="{geturl}">{geturl}</a>
+    <hr>
+    """
+    page_body = """
+    <h2><font color="red">この登録を解除していいですか？</font></h2>
+    """
+    page_footer = "<hr><a href='/new'>新規イベント作成</a>"
+
+    (name, comment, n, dates, users) = get_data(choseiId)
+    uid = int(userId)
 
     page_form  = f"<form method='POST' action='/add/{choseiId}/{userId}'>"
     page_form  += f"""
@@ -334,23 +367,24 @@ def do_delete_confirm(choseiId, userId):
         <td>{date}</td>
         <td>
         <input type="radio" name="date{i}" value="0" id="image0{i}" {checked0} readonly/>
-        <label for="image0{i}"><img src="/images/image0.png" with="40" height="40"></label>
+        <label for="image0{i}"><img src="/images/image0.png" with="20" height="20"></label>
         </td>
         <td>
         <input type="radio" name="date{i}" value="1" id="image1{i}" {checked1} readonly/>
-        <label for="image1{i}"><img src="/images/image1.png" with="40" height="40"></label>
+        <label for="image1{i}"><img src="/images/image1.png" with="20" height="20"></label>
         </td>
         <td>
         <input type="radio" name="date{i}" value="2" id="image2{i}" {checked2} readonly/>
-        <label for="image2{i}"><img src="/images/image2.png" with="40" height="40"></label>
+        <label for="image2{i}"><img src="/images/image2.png" with="20" height="20"></label>
         </td>
         </tr>
         """
     page_form  += "</table>"
 
+    submit_value = "登録更新" if update else "登録追加"
     page_form += f"""
     コメント:<br>
-    <textarea name="user_comment" rows="5" cols="40" class="readonly"  readonly>{users[uid][n+1]}</textarea><br>
+    <textarea name="user_comment" rows="5" cols="40" class="readonly" readonly>{users[uid][n+1]}</textarea><br>
     <input type="hidden" value="{submit_value}"/>
     """
     page_form  += "</form>"
@@ -367,9 +401,9 @@ def do_delete_confirm(choseiId, userId):
         </div>
         """
 
-    page_body = page_form + page_form_delete
+    page_body += page_form + page_form_delete
 
-    return html_header + html_body.format(page_header + page_body + page_footer);
+    return html_header + html_body.format(page_header + page_body + page_footer) + html_footer;
 
 @route('/delete/<choseiId>/<userId>', method="POST")
 def do_delete(choseiId, userId):
