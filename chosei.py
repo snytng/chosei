@@ -1,5 +1,5 @@
 ﻿# coding: utf-8
-from bottle import route, run, request, response, redirect, static_file
+from bottle import route, run, request, response, redirect, static_file, template
 import random, string
 import base64
 
@@ -8,36 +8,29 @@ def images(filename):
     return static_file(filename, "./images")
 
 @route('/')
+def root():
+    return redirect("/index.html")
+    
+@route('/index.html')
+def index():
+    return template("index")
+
 @route('/new')
 @route('/new/<name>')
-def new(name = "〇〇会議/□□懇親会", comment=""):
-    if "comment" in request.query:
+def new(name="", comment="", dates=""):
+    if name == "":
+        if "name" in request.query:
+            name = request.query.name
+        else:
+            name = "〇〇会議/□□懇親会/△△激励会"
+
+    if comment == "" and "comment" in request.query:
         comment = request.query.comment
 
-    response.set_header('Content-Type', 'text/html; charset=utf-8')
-    html_header = f"""
-    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-    <html>
-    <head><title>chosei new</title>
-    <script>
-    window.onload = function () {{
-        var today = new Date();
-        today.setDate(today.getDate());
-        var yyyy = today.getFullYear();
-        var mm = ("0"+(today.getMonth()+1)).slice(-2);
-        var dd = ("0"+today.getDate()).slice(-2);
-        document.getElementById("today").value=yyyy+'-'+mm+'-'+dd;
-    }}
-    </script>
-    </head>
-    """
-    html_body = "<body>{}</body>"
-    html_footer = f"</html>"
-    page_header = f"<h1>chosei 新規イベント作成</h1><hr>"
-    page_footer = f"<hr>chosei made by snytng"
-
-
-    dates = f"""
+    if dates == "" and dates in request.query:
+        dates = request.query.dates
+    else:
+        dates = f"""
 2022/11/19（土） 10:00-11:00
 2022/11/20（日） 12:30-13:30
 2022/11/21（月） 14:00-15:30
@@ -46,185 +39,7 @@ def new(name = "〇〇会議/□□懇親会", comment=""):
 2022/11/24（木） 09:30-11:30
 2022/11/25（金） 17:30-18:30"""
 
-    page_body = f"""
-    <form method='POST' action='/new_confirm'>
-    イベント名:<br>
-    <input type="text" name="name" value="{name}" pattern="[\S]+" placeholder="イベント名を入力"/><br>
-    候補日時:<br>
-    <textarea name="dates" rows="10" cols="40" placeholder="候補日時を入力">{dates}</textarea>
-    <input type="button" value="最後を削除" onclick='
-        var list_dates = document.getElementsByName("dates");
-        var dates = list_dates[0];
-        var tadata = dates.value.split("\\n");
-        tadata.pop();
-        dates.value = tadata.join("\\n");
-    '/>
-    <table border="2"
-    onmousedown='
-        var cell = event.srcElement ? event.srcElement : event.target;
-        if(cell.tagName=="TD" && cell.id=="picker"){{
-            //alert(cell.innerText);
-            startcell=cell;
-            onmousemove();
-        }} else {{
-            startcell = null;
-        }}
-    '
-    onmouseup='
-        var cell = event.srcElement ? event.srcElement : event.target;
-        if(startcell != null) {{
-            endcell = endcell == null ? startcell : endcell;
-
-            var dates = document.getElementsByName("dates");
-            ta = dates[0];
-            var tds = document.getElementsByName("targetdate");
-            td = tds[0];
-
-            var ymd = td.value.split("-");
-            var dObj = new Date();
-            dObj.setFullYear(ymd[0]);
-            dObj.setMonth(ymd[1] - 1);
-            dObj.setDate(ymd[2]);
-            ymdvalue = ymd.join("/") + "（" + "日月火水木金土".charAt(dObj.getDay())  + "）";
-
-            var fromx,fromy,tox,toy,x,y;
-            var rows=this.getElementsByTagName("TR");
-            var cols=new Array();
-            for(y=0;y<rows.length;y++){{
-                cols[y]=rows[y].getElementsByTagName("TD");
-                for(x=0;x<cols[y].length;x++){{
-                    if(cols[y][x]==startcell){{fromx=x;fromy=y;}}
-                    if(cols[y][x]==endcell){{tox=x;toy=y;}};  
-                }}
-            }}
-
-            if(fromy > toy || (fromy == toy && fromx > tox)){{
-                [startcell, endcell] = [endcell, startcell];
-            }}
-        
-            for(y=0;y<rows.length;y++){{
-                for(x=0;x<cols[y].length;x++){{
-                    cols[y][x].style.backgroundColor = ""
-                    //alert(fromx +"," + fromy + " " + tox + "," + toy +"=" + x + "," + y)
-                    if( (fromy - y)*(y-toy) > 0){{
-                        cols[y][x].style.backgroundColor = "#ddddff";
-                    }} else if(fromy == y && toy == y){{
-                        if (fromx <= x && x <= tox){{
-                            cols[y][x].style.backgroundColor = "#ddddff";
-                        }}
-                    }} else {{
-                        if(fromy == y && fromx <= x) {{
-                            cols[y][x].style.backgroundColor = "#ddddff";
-                        }} else if(toy == y && x <= tox) {{
-                            cols[y][x].style.backgroundColor = "#ddddff";
-                        }}
-                    }} // if 0
-                }} // for x
-            }} // for y
-
-            if(ta.value.length != 0){{
-                ta.value += "\\n";
-            }}
-            ta.value += ymdvalue + " " + startcell.innerText + "-" + endcell.innerText;
-
-        }}
-
-        startcell= null;
-        endcell = null;
-    '
-    onmousemove='
-        var cell = event.srcElement ? event.srcElement : event.target;
-
-        if(cell.tagName=="TD" && cell.id=="picker" && window.startcell){{
-            //alert(cell.innerText);
-            endcell=cell;
-
-            var fromx,fromy,tox,toy,x,y;
-            var rows=this.getElementsByTagName("TR");
-            var cols=new Array();
-            for(y=0;y<rows.length;y++){{
-                cols[y]=rows[y].getElementsByTagName("TD");
-                for(x=0;x<cols[y].length;x++){{
-                    if(cols[y][x]==startcell){{fromx=x;fromy=y;}}
-                    if(cols[y][x]==endcell){{tox=x;toy=y;}};  
-                }}
-            }}
-
-            if(fromy > toy || (fromy == toy && fromx > tox)){{
-                [fromx, fromy, tox, toy] = [tox, toy, fromx, fromy];
-            }}
-
-            for(y=0;y<rows.length;y++){{
-                for(x=0;x<cols[y].length;x++){{
-                    //alert(fromx +"," + fromy + " " + tox + "," + toy +"=" + x + "," + y)
-                    cols[y][x].style.backgroundColor = ""
-                    if( (fromy - y)*(y - toy) > 0){{
-                        cols[y][x].style.backgroundColor = "#ddddff";
-                    }} else if(fromy == y && toy == y){{
-                        if (fromx <= x && x <= tox){{
-                            cols[y][x].style.backgroundColor = "#ddddff";
-                        }}
-                    }} else {{
-                        if(fromy == y && fromx <= x) {{
-                            cols[y][x].style.backgroundColor = "#ddddff";
-                        }} else if(toy == y && x <= tox) {{
-                            cols[y][x].style.backgroundColor = "#ddddff";
-                        }}
-                    }} // if 0
-                }} // for x
-            }} // for y
-        }}
-        return false; //選択をキャンセル
-    '>
-    <tr>
-    <td rowspan="5"><input type="date" name="targetdate" id="today"></td>
-    <td id="picker">08:00</td>
-    <td id="picker">08:30</td>
-    <td id="picker">09:00</td>
-    <td id="picker">09:30</td>
-    <td id="picker">10:00</td>
-    <td id="picker">10:30</td>
-    </tr>
-    <tr>
-    <td id="picker">11:00</td>
-    <td id="picker">11:30</td>
-    <td id="picker">12:00</td>
-    <td id="picker">12:30</td>
-    <td id="picker">13:00</td>
-    <td id="picker">13:30</td>
-    </tr>
-    <tr>
-    <td id="picker">14:00</td>
-    <td id="picker">14:30</td>
-    <td id="picker">15:00</td>
-    <td id="picker">15:30</td>
-    <td id="picker">16:00</td>
-    <td id="picker">16:30</td>
-    </tr>
-    <tr>
-    <td id="picker">17:00</td>
-    <td id="picker">17:30</td>
-    <td id="picker">18:00</td>
-    <td id="picker">18:30</td>
-    <td id="picker">19:00</td>
-    <td id="picker">19:30</td>
-    </tr>
-    <tr>
-    <td id="picker">20:00</td>
-    <td id="picker">20:30</td>
-    <td id="picker">21:00</td>
-    <td id="picker">21:30</td>
-    <td id="picker">22:00</td>
-    <td id="picker">22:30</td>
-    </tr>
-    </table>
-    コメント(任意):<br>
-    <textarea name="comment" rows="3" cols="40" placeholder="コメントを入力">{comment}</textarea><br>
-    <input type='submit' value='新規作成'/>
-    </form>
-    """
-
-    return html_header + html_body.format(page_header + page_body + page_footer) + html_footer;
+    return template("new", name=name, comment=comment, dates=dates)
 
 @route('/new_confirm', method="POST")
 def do_new_confirm():
