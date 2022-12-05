@@ -141,10 +141,13 @@ def add_userId(choseiId, userId=None):
     # 新規 userId == None
     update = False if userId == None else True
 
-    # 新規ならユーザーIDと新規ユーザーを追加
-    if not update:
-        userId = int(len(users))
-        users.append(["新規ユーザー"] + ["2"]*n + [""])
+    # 新規でなければuserIdのuserを取得、新規ならデフォルト値を設定
+    if update:
+        userIdlist = [i for i, u in enumerate(users) if u[0] == userId]
+        user = users[userIdlist[0]]
+    else:
+        userId = randomname(10)
+        user = [userId] +  ["新規ユーザー"] + ["2"]*n + [""]
 
     response.set_header('Content-Type', 'text/html; charset=utf-8')
     html_header = f"""
@@ -193,13 +196,11 @@ def add_userId(choseiId, userId=None):
 
     page_footer = "<hr><a href='/new'>新規イベント作成</a>"
 
-    # ユーザーインデックス
-    uid = int(userId)
-
-    page_form  = f"<form method='POST' action='/add/{choseiId}/{userId}'>"
+    page_form = f"<form method='POST' action='/add/{choseiId}/{userId}'>"
     page_form  += f"""
+    <input type="hidden" name="userId" value="{user[0]}"/>
     ユーザー名:<br>
-    <input type="text" name="user_name" value="{users[uid][0]}"pattern="[\S]+"/>（空白なし）<br>
+    <input type="text" name="user_name" value="{user[1]}" pattern="[\S]+"/>（空白なし）<br>
     """
     page_form  += "<table border='1' cellpadding='15'>"
     page_form  += """
@@ -211,9 +212,9 @@ def add_userId(choseiId, userId=None):
     </tr>
     """
     for (i, date) in enumerate(dates):
-        checked0 = "checked" if users[uid][i+1] == "0" else ""
-        checked1 = "checked" if users[uid][i+1] == "1" else ""
-        checked2 = "checked" if users[uid][i+1] == "2" else ""
+        checked0 = "checked" if user[i+2] == "0" else ""
+        checked1 = "checked" if user[i+2] == "1" else ""
+        checked2 = "checked" if user[i+2] == "2" else ""
         page_form += f"""
         <tr>
         <td>{date}</td>
@@ -236,7 +237,7 @@ def add_userId(choseiId, userId=None):
     submit_value = "登録更新" if update else "登録追加"
     page_form += f"""
     コメント:<br>
-    <textarea name="user_comment" rows="5" cols="40">{users[uid][n+1]}</textarea><br>
+    <textarea name="user_comment" rows="5" cols="40">{user[n+2]}</textarea><br>
     <input type="submit" value="{submit_value}"/>
     """
     page_form  += "</form>"
@@ -257,10 +258,10 @@ def add_userId(choseiId, userId=None):
     return html_header + html_body.format(page_header + page_body + page_footer) + html_footer;
 
 @route('/add/<choseiId>/<userId>', method="POST")
-def do_add(choseiId, userId):
+def do_add(choseiId, userId=None):
     (name, comment, n, dates, users) = get_data(choseiId)
 
-    user = [request.forms.user_name]
+    user = [request.forms.userId, request.forms.user_name]
     for i in range(n):
         dateN = f"date{i}"
         user.append(request.forms[dateN])
@@ -274,13 +275,7 @@ def do_add(choseiId, userId):
 def do_delete_confirm(choseiId, userId):
     (name, comment, n, dates, users) = get_data(choseiId)
 
-    # 新規 userId == None
-    update = False if userId == None else True
-
-    # 新規ならユーザーIDと新規ユーザーを追加
-    if not update:
-        userId = int(len(users))
-        users.append(["新規ユーザー"] + ["2"]*n + [""])
+    update = True
 
     response.set_header('Content-Type', 'text/html; charset=utf-8')
     html_header = f"""
@@ -333,12 +328,14 @@ def do_delete_confirm(choseiId, userId):
     page_footer = "<hr><a href='/new'>新規イベント作成</a>"
 
     (name, comment, n, dates, users) = get_data(choseiId)
-    uid = int(userId)
+    userIdlist = [i for i, u in enumerate(users) if u[0] == userId]
+    user = users[userIdlist[0]]
 
     page_form  = f"<form method='POST' action='/add/{choseiId}/{userId}'>"
     page_form  += f"""
+    <input type="hidden" name="userId" value="{user[0]}"/>
     ユーザー名:<br>
-    <input type="text" name="user_name" value="{users[uid][0]}"pattern="[\S]+" class="readonly" readonly/>（空白なし）<br>
+    <input type="text" name="user_name" value="{user[1]}" pattern="[\S]+" class="readonly" readonly/>（空白なし）<br>
     """
     page_form  += "<table border='1' cellpadding='15'>"
     page_form  += """
@@ -350,9 +347,9 @@ def do_delete_confirm(choseiId, userId):
     </tr>
     """
     for (i, date) in enumerate(dates):
-        checked0 = "checked" if users[uid][i+1] == "0" else ""
-        checked1 = "checked" if users[uid][i+1] == "1" else ""
-        checked2 = "checked" if users[uid][i+1] == "2" else ""
+        checked0 = "checked" if user[i+2] == "0" else ""
+        checked1 = "checked" if user[i+2] == "1" else ""
+        checked2 = "checked" if user[i+2] == "2" else ""
         page_form += f"""
         <tr>
         <td>{date}</td>
@@ -375,7 +372,7 @@ def do_delete_confirm(choseiId, userId):
     submit_value = "登録更新" if update else "登録追加"
     page_form += f"""
     コメント:<br>
-    <textarea name="user_comment" rows="5" cols="40" class="readonly" readonly>{users[uid][n+1]}</textarea><br>
+    <textarea name="user_comment" rows="5" cols="40" class="readonly" readonly>{user[n+2]}</textarea><br>
     <input type="hidden" value="{submit_value}"/>
     """
     page_form  += "</form>"
@@ -426,7 +423,7 @@ def get_table(choseiId):
     for (i, date) in enumerate(dates):
         dsummery= [0]*3
         for user in users:
-            dsummery[int(user[i+1])] = dsummery[int(user[i+1])] + 1
+            dsummery[int(user[i+2])] = dsummery[int(user[i+2])] + 1
         summery.append(dsummery)
 
     # table
@@ -441,7 +438,7 @@ def get_table(choseiId):
     """
     for (i, user) in enumerate(users):
         tr += "<th>"
-        tr += f"<a href='/add/{choseiId}/{i}'>{user[0]}</a>" # name
+        tr += f"<a href='/add/{choseiId}/{user[0]}'>{user[1]}</a>" # name
         tr += "</th>"
     tr += f"<th><a href='/add/{choseiId}'>追加</a></th>"
     tr += "</tr>"
@@ -469,9 +466,9 @@ def get_table(choseiId):
         #users
         for user in users:
             userdate = '<img src="/images/image2.png" with="20" height="20"/>'
-            if user[i+1] == "0":
+            if user[i+2] == "0":
                 userdate = '<img src="/images/image0.png" with="20" height="20"/>'
-            elif user[i+1] == "1":
+            elif user[i+2] == "1":
                 userdate = '<img src="/images/image1.png" with="20" height="20"/>'
             tr += f"<td>{userdate}</td>" # response
         tr += "</tr>"
@@ -485,7 +482,7 @@ def get_table(choseiId):
     tr += "<td></td>"
     tr += "<td></td>"
     for user in users:
-        tr += f"<td width='80'><pre>{user[n+1]}</pre></td>" # comment
+        tr += f"<td width='80'><pre>{user[n+2]}</pre></td>" # comment
     tr += "</tr>"
     page_table += tr
 
@@ -512,11 +509,11 @@ def db_add(choseiId, userId, user):
     (name, comment, n, dates, users) = get_data(choseiId)
     encoded_comment = base64.b64encode(comment.encode()).decode()
 
-    uid = int(userId)
-    if uid >= len(users):
+    userIdlist = [i for i, u in enumerate(users) if u[0] == userId]
+    if not userIdlist:
         users.append(user)
     else:
-        users[uid] = user
+        users[userIdlist[0]] = user
 
     with open(f"./data/{choseiId}.txt", mode="w", encoding="utf8", newline='\r\n') as f:
         f.write(name+ "\n")
@@ -533,7 +530,11 @@ def db_delete(choseiId, userId):
     (name, comment, n, dates, users) = get_data(choseiId)
     encoded_comment = base64.b64encode(comment.encode()).decode()
 
-    uid = int(userId)
+    userIdlist = [i for i, u in enumerate(users) if u[0] == userId]
+    if not userIdlist:
+        return
+
+    uid = userIdlist[0]
     users.pop(uid)
 
     with open(f"./data/{choseiId}.txt", mode="w", encoding="utf8", newline='\r\n') as f:
