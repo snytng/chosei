@@ -551,6 +551,3 @@ def db_delete(choseiId, userId):
 def randomname(n):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=n))
 
-# -----
-if __name__ == "__main__":
-    run(host='0.0.0.0', port=18101, debug=True, reloader=True)
