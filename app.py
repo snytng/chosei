@@ -13,4 +13,4 @@ def index():
 
 # -----
 if __name__ == "__main__":
-    run(host='0.0.0.0', debug=True, reloader=True)
+    run(host='0.0.0.0', port=80, debug=True, reloader=True)
