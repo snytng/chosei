@@ -26,6 +26,7 @@ manages the event schedule adjustments with participants.
 
 ## Azure deployment
 - https://chosei-web-app.azurewebsites.net/index.html
+  - add start up command: `gunicorn --bind=0.0.0.0 --timeout 600 chosei:app`
 
 ***
 made by snytng@gmail.com
