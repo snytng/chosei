@@ -1,5 +1,5 @@
 ﻿# coding: utf-8
-from bottle import route, run, request, response, redirect, static_file, template
+from bottle import route, run, request, response, redirect, static_file, template, default_app
 import random, string
 import base64
 
@@ -554,3 +554,5 @@ def randomname(n):
 # -----
 if __name__ == "__main__":
     run(host='0.0.0.0', port=18101, debug=True, reloader=True)
+
+app = default_app()

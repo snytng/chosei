@@ -553,6 +553,6 @@ def randomname(n):
 
 # -----
 if __name__ == "__main__":
-    run(host='0.0.0.0', port=80, server="gnuicorn", workers=4, debug=True, reloader=True)
+    run(host='0.0.0.0', port=18101, debug=True, reloader=True)
 
 app = default_app()
