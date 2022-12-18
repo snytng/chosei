@@ -24,6 +24,9 @@ manages the event schedule adjustments with participants.
 - /add/\<event unique id\>/\<user id\>
   - Add and update the participants' attendances and a comment.
 
+## Azure deployment
+- https://chosei-web-app.azurewebsites.net/index.html
+
 ***
 made by snytng@gmail.com
 
