@@ -490,10 +490,12 @@ def get_table(choseiId):
 
     return page_table
 
+dbpath = "/home/chosei/data"
+
 def db_create(choseiId, name, dates=[], comment=""):
     encoded_comment = base64.b64encode(comment.encode()).decode()
 
-    with open(f"./data/{choseiId}.txt", mode="w", encoding="utf8", newline='\r\n') as f:
+    with open(f"{dbpath}/{choseiId}.txt", mode="w", encoding="utf8", newline='\r\n') as f:
         f.write(name+ "\n")
         f.write(encoded_comment+ "\n")
         f.write(str(len(dates)) + "\n")
@@ -501,7 +503,7 @@ def db_create(choseiId, name, dates=[], comment=""):
             f.write(date + "\n")
 
 def db_load(choseiId):
-    with open(f"./data/{choseiId}.txt", mode="r", encoding="utf8") as f:
+    with open(f"{dbpath}/{choseiId}.txt", mode="r", encoding="utf8") as f:
         lines = f.readlines()
     return [line.rstrip("\n") for line in lines]
 
@@ -515,7 +517,7 @@ def db_add(choseiId, userId, user):
     else:
         users[userIdlist[0]] = user
 
-    with open(f"./data/{choseiId}.txt", mode="w", encoding="utf8", newline='\r\n') as f:
+    with open(f"{dbpath}/{choseiId}.txt", mode="w", encoding="utf8", newline='\r\n') as f:
         f.write(name+ "\n")
         f.write(encoded_comment+ "\n")
         f.write(str(len(dates)) + "\n")
@@ -537,7 +539,7 @@ def db_delete(choseiId, userId):
     uid = userIdlist[0]
     users.pop(uid)
 
-    with open(f"./data/{choseiId}.txt", mode="w", encoding="utf8", newline='\r\n') as f:
+    with open(f"{dbpath}/{choseiId}.txt", mode="w", encoding="utf8", newline='\r\n') as f:
         f.write(name+ "\n")
         f.write(encoded_comment+ "\n")
         f.write(str(len(dates)) + "\n")
@@ -553,6 +555,7 @@ def randomname(n):
 
 # -----
 if __name__ == "__main__":
+    dbpath = "./data"
     run(host='0.0.0.0', port=18101, debug=True, reloader=True)
 
 app = default_app()
