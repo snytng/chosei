@@ -3,9 +3,9 @@ from bottle import route, run, request, response, redirect, static_file, templat
 import random, string
 import base64
 
-@route('/images/<filename>')
-def images(filename):
-    return static_file(filename, "./images")
+@route('/static/<path:path>')
+def static(path):
+    return static_file(path, "./static")
 
 @route('/')
 def root():
@@ -112,7 +112,14 @@ def get(choseiId):
     html_header = f"""
     <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
     <html>
-    <head><title>chosei {name}</title></head>
+    <head>
+    <title>chosei {name}</title>
+    <style>
+    td, th {{
+        padding: 2px 2px;
+    }}  
+    </style>
+    </head>
     """
     html_body = "<body>{}</body>"
     html_footer = f"</html>"
@@ -123,7 +130,8 @@ def get(choseiId):
     <h1>chosei {name}</h1>
     コメント: <table boarder='1'><tr><td><pre>{comment}</pre></td></tr></table><br>
     リンク: <a href="{geturl}">{geturl}</a>
-    <hr>"""
+    <hr>
+    """
     page_footer = "<hr><a href='/new'>新規イベント作成</a>"
 
     page_table = get_table(choseiId)
@@ -180,6 +188,9 @@ def add_userId(choseiId, userId=None):
     [readonly] + label{{
         pointer-events:none;
     }}
+    td, th {{
+        padding: 2px 2px;
+    }}    
     </style>
     </head>
     """
@@ -192,7 +203,8 @@ def add_userId(choseiId, userId=None):
     <h1>chosei {name}</h1>
     コメント: <table boarder='1'><tr><td><pre>{comment}</pre></td></tr></table><br>
     リンク: <a href="{geturl}">{geturl}</a>
-    <hr>"""
+    <hr>
+    """
 
     page_footer = "<hr><a href='/new'>新規イベント作成</a>"
 
@@ -206,9 +218,9 @@ def add_userId(choseiId, userId=None):
     page_form  += """
     <tr bgcolor='#ddeeee' align='center'>
     <th>候補日時</th>
-    <th bgcolor='#f0eeee'><img src="/images/image0.png" with="20" height="20"/></th>
-    <th bgcolor='#f0eeee'><img src="/images/image1.png" with="20" height="20"/></th>
-    <th bgcolor='#f0eeee'><img src="/images/image2.png" with="20" height="20"/></th>
+    <th bgcolor='#f0eeee'><img src="/static/images/image0.png" with="30" height="30"/></th>
+    <th bgcolor='#f0eeee'><img src="/static/images/image1.png" with="30" height="30"/></th>
+    <th bgcolor='#f0eeee'><img src="/static/images/image2.png" with="30" height="30"/></th>
     </tr>
     """
     for (i, date) in enumerate(dates):
@@ -220,15 +232,15 @@ def add_userId(choseiId, userId=None):
         <td>{date}</td>
         <td>
         <input type="radio" name="date{i}" value="0" id="image0{i}" {checked0}/>
-        <label for="image0{i}"><img src="/images/image0.png" with="20" height="20"></label>
+        <label for="image0{i}"><img src="/static/images/image0.png" with="30" height="30"></label>
         </td>
         <td>
         <input type="radio" name="date{i}" value="1" id="image1{i}" {checked1}/>
-        <label for="image1{i}"><img src="/images/image1.png" with="20" height="20"></label>
+        <label for="image1{i}"><img src="/static/images/image1.png" with="30" height="30"></label>
         </td>
         <td>
         <input type="radio" name="date{i}" value="2" id="image2{i}" {checked2}/>
-        <label for="image2{i}"><img src="/images/image2.png" with="20" height="20"></label>
+        <label for="image2{i}"><img src="/static/images/image2.png" with="30" height="30"></label>
         </td>
         </tr>
         """
@@ -308,6 +320,10 @@ def do_delete_confirm(choseiId, userId):
     [readonly] + label{{
         pointer-events:none;
     }}
+
+    td, th {{
+        padding: 2px 2px;
+    }}
     </style>
     </head>
     """
@@ -341,9 +357,9 @@ def do_delete_confirm(choseiId, userId):
     page_form  += """
     <tr bgcolor='#ddeeee' align='center'>
     <th>候補日時</th>
-    <th bgcolor='#f0eeee'><img src="/images/image0.png" with="20" height="20"/></th>
-    <th bgcolor='#f0eeee'><img src="/images/image1.png" with="20" height="20"/></th>
-    <th bgcolor='#f0eeee'><img src="/images/image2.png" with="20" height="20"/></th>
+    <th bgcolor='#f0eeee'><img src="/static/images/image0.png" with="30" height="30"/></th>
+    <th bgcolor='#f0eeee'><img src="/static/images/image1.png" with="30" height="30"/></th>
+    <th bgcolor='#f0eeee'><img src="/static/images/image2.png" with="30" height="30"/></th>
     </tr>
     """
     for (i, date) in enumerate(dates):
@@ -355,15 +371,15 @@ def do_delete_confirm(choseiId, userId):
         <td>{date}</td>
         <td>
         <input type="radio" name="date{i}" value="0" id="image0{i}" {checked0} readonly/>
-        <label for="image0{i}"><img src="/images/image0.png" with="20" height="20"></label>
+        <label for="image0{i}"><img src="/static/images/image0.png" with="30" height="30"></label>
         </td>
         <td>
         <input type="radio" name="date{i}" value="1" id="image1{i}" {checked1} readonly/>
-        <label for="image1{i}"><img src="/images/image1.png" with="20" height="20"></label>
+        <label for="image1{i}"><img src="/static/images/image1.png" with="30" height="30"></label>
         </td>
         <td>
         <input type="radio" name="date{i}" value="2" id="image2{i}" {checked2} readonly/>
-        <label for="image2{i}"><img src="/images/image2.png" with="20" height="20"></label>
+        <label for="image2{i}"><img src="/static/images/image2.png" with="30" height="30"></label>
         </td>
         </tr>
         """
@@ -430,11 +446,11 @@ def get_table(choseiId):
     page_table = "<table border='1' cellpadding='15'>"
     # table header
     tr = """
-    <tr bgcolor='#ddeeee' align='center'>"
+    <tr bgcolor='#ddeeee' align='center'>
     <th>日時</th>
-    <th bgcolor='#f0eeee'><img src="/images/image0.png" with="20" height="20"/></th>
-    <th bgcolor='#f0eeee'><img src="/images/image1.png" with="20" height="20"/></th>
-    <th bgcolor='#f0eeee'><img src="/images/image2.png" with="20" height="20"/></th>
+    <th bgcolor='#f0eeee'><img src="/static/images/image0.png" with="30" height="30"/></th>
+    <th bgcolor='#f0eeee'><img src="/static/images/image1.png" with="30" height="30"/></th>
+    <th bgcolor='#f0eeee'><img src="/static/images/image2.png" with="30" height="30"/></th>
     """
     for (i, user) in enumerate(users):
         tr += "<th>"
@@ -465,11 +481,11 @@ def get_table(choseiId):
 
         #users
         for user in users:
-            userdate = '<img src="/images/image2.png" with="20" height="20"/>'
+            userdate = '<img src="/static/images/image2.png" with="30" height="30"/>'
             if user[i+2] == "0":
-                userdate = '<img src="/images/image0.png" with="20" height="20"/>'
+                userdate = '<img src="/static/images/image0.png" with="30" height="30"/>'
             elif user[i+2] == "1":
-                userdate = '<img src="/images/image1.png" with="20" height="20"/>'
+                userdate = '<img src="/static/images/image1.png" with="30" height="30"/>'
             tr += f"<td>{userdate}</td>" # response
         tr += "</tr>"
 
